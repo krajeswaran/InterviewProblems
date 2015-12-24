@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class KnapsackMultiConstraint {
+public class KnapsackVariant {
     private static final String CSV_FILENAME = "products.csv";
     private static final int TOTE_HEIGHT = 35;
     private static final int TOTE_WIDTH = 30;
@@ -22,13 +22,13 @@ public class KnapsackMultiConstraint {
         int[][] k = new int[N + 1][TOTE_VOLUME + 1];
 
         for (int n = 1; n <= N; n++) {
+            Product currentProduct = products.get(n - 1);
             for (int v = 1; v <= TOTE_VOLUME; v++) {
                 int option1 = k[n-1][v];
 
                 int option2 = Integer.MIN_VALUE;
-                Product currentProduct = products.get(n-1);
                 if (currentProduct.volume <= v) {
-                    option2 = currentProduct.price + k[n-1][v-currentProduct.volume];
+                    option2 = currentProduct.getPricePerWt() + k[n - 1][v - currentProduct.volume];
                 }
 
                 k[n][v] = Math.max(option1, option2);
@@ -37,10 +37,11 @@ public class KnapsackMultiConstraint {
 
         int productIdCount = 0;
         for (int n = N, v = TOTE_VOLUME; n > 0; n--) {
+            Product currentProduct = products.get(n - 1);
             if(k[n][v] != k[n-1][v]) {
-                products.get(n-1).shouldPick = true;
-                productIdCount += products.get(n-1).productId;
-                v -= products.get(n-1).volume;
+                currentProduct.shouldPick = true;
+                productIdCount += currentProduct.productId;
+                v -= currentProduct.volume;
             }
         }
 
@@ -54,7 +55,7 @@ public class KnapsackMultiConstraint {
         InputStream is = null;
         ArrayList<Product> productList = new ArrayList<>();
         try {
-            is = KnapsackMultiConstraint.class.getResourceAsStream(CSV_FILENAME);
+            is = KnapsackVariant.class.getResourceAsStream(CSV_FILENAME);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             while ((lines = br.readLine()) != null) {
                 String[] fields = lines.split(cvsSplitBy);
@@ -81,21 +82,21 @@ public class KnapsackMultiConstraint {
         int width = Integer.parseInt(args[3]);
         int height = Integer.parseInt(args[4]);
 
-        return (width <= TOTE_WIDTH) && (height <= TOTE_HEIGHT) && (length <= TOTE_LENGTH) && (length * height * width <= TOTE_VOLUME);
+        return (length * height * width <= TOTE_VOLUME);
     }
 
     private static void printDebugInfo(ArrayList<Product> products) {
-        int productIdCount = 0, weightCount = 0, priceCount = 0;
-        System.out.println("Picking product IDs");
+        int volumeCount = 0, weightCount = 0, priceCount = 0;
+        System.out.println("Picking product IDs for TOTE volume: " + TOTE_VOLUME);
         for (Product product : products) {
             if (product.shouldPick) {
-                System.out.print(product.productId + " ");
-                productIdCount += product.productId;
+                System.out.print(product.productId + "/" + product.getPricePerWt() + " ");
+                volumeCount += product.volume;
                 weightCount += product.weight;
                 priceCount += product.price;
             }
         }
-        System.out.printf("\nTotal counts == ProdIdCnt: %d, Wght: %d, Price: %d \n", productIdCount, weightCount, priceCount);
+        System.out.printf("\nTotal counts == Volume: %d, Weight: %d, Price: %d \n", volumeCount, weightCount, priceCount);
     }
 
     public static void main(String[] args) {

@@ -3,14 +3,11 @@ package net.interviewproblems;
 import java.util.Arrays;
 
 /**
- *  A simple container for each product
+ * A simple container for each product
  */
 public class Product {
     int productId;
     int price;
-    int length;
-    int width;
-    int height;
     int weight;
     int volume;
     boolean shouldPick;
@@ -25,10 +22,14 @@ public class Product {
 
         this.productId = Integer.parseInt(args[0]);
         this.price = Integer.parseInt(args[1]);
-        this.length = Integer.parseInt(args[2]);
-        this.width = Integer.parseInt(args[3]);
-        this.height = Integer.parseInt(args[4]);
+        int length = Integer.parseInt(args[2]);
+        int width = Integer.parseInt(args[3]);
+        int height = Integer.parseInt(args[4]);
+        this.volume = length * height * width;
         this.weight = Integer.parseInt(args[5]);
-        this.volume = this.weight * this.height * this.width;
+    }
+
+    int getPricePerWt() {
+        return this.price / this.weight;
     }
 }
